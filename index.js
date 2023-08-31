@@ -113,16 +113,11 @@ async function run() {
 
     app.get('/myblogs',async(req,res)=>{
       const email = req.query.email
-      // if(!email){
-      //   res.send([])
-      // }
-      //  const decodedEmail = req.decoded.email
-      //  if(email !== decodedEmail){
-      //    return res.status(403).send({error:true,message:'forbidden access'})
-      //  }
+      
        
       const quierys = {email:email}
       const result = await blogCollections.find(quierys).toArray()
+      console.log(quierys)
       res.send(result)
     })
 
@@ -157,6 +152,39 @@ async function run() {
       res.send(result)
  
    })
+
+
+   app.patch('/api/posts/:postId', async (req, res) => {
+    const postId = req.params.postId;
+    const { username, text } = req.body;
+  
+    try {
+      const result = await blogCollections.updateOne(
+        { _id: new ObjectId(postId) },
+        { $push: { comment: { username, text } } }
+      );
+      res.status(200).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'An error occurred while adding the comment.' });
+    }
+  });
+
+  app.patch('/api/posts/:postId/like/:userId', async (req, res) => {
+    const postId = req.params.postId;
+    const userId = req.params.userId;
+  
+    try {
+      const result = await blogCollections.updateOne(
+        { _id: new ObjectId(postId) },
+        { $push: { like: userId } }
+      );
+      res.status(200).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'An error occurred while updating likes.' });
+    }
+  });
 
     app.listen(port, () => {
       console.log("app is running");
